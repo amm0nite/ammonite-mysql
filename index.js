@@ -9,7 +9,7 @@ var configure = function(config) {
 
     var requiredProperties = ['user', 'host', 'password', 'database'];
     for (let property in requiredProperties) {
-        if (config.hasOwnProperty(property)) {
+        if (!config.hasOwnProperty(property)) {
             throw new Error('Missing ' + property + ' config property');
         }
     }
@@ -23,29 +23,30 @@ var configure = function(config) {
     });
 };
 
-var find = function(table, options, next) {
+var find = function(table, where, tail, next) {
     if (!pool) return next('Not Configured');
 
     var whereElements = []
     var values = [];
-    for (let name in options) {
+    for (let name in where) {
         whereElements.push(name + ' = ?');
-        values.push(options[name]);
+        values.push(where[name]);
     }
     
     var sql = 'SELECT * FROM ' + mysql.escapeId(table) + ' WHERE ' + whereElements.join(' AND ');
+    if (tail) {
+        sql = sql + ' ' + tail;
+    }
+
     var req = pool.query(sql, values, next);
 };
 
-var findOne = function(table, options, next) {
+var findOne = function(table, where, next) {
     if (!pool) return next('Not Configured');
 
-    find(table, options, function(err, res) {
+    find(table, where, 'LIMIT 1', function(err, res) {
         if (err) {
             return next(err);
-        }
-        if (res.length > 1) {
-            return next('Too many results');
         }
         var found = null;
         if (res.length == 1) {
@@ -55,18 +56,33 @@ var findOne = function(table, options, next) {
     });
 };
 
-var insert = function(table, options, next) {
+var findLast = function(table, where, next) {
+    if (!pool) return next('Not Configured');
+
+    find(table, where, 'ORDER BY id DESC LIMIT 1', function(err, res) {
+        if (err) {
+            return next(err);
+        }
+        var found = null;
+        if (res.length == 1) {
+            found = res[0];
+        }
+        return next(null, found);
+    });
+};
+
+var insert = function(table, values, next) {
     if (!pool) return next('Not Configured');
 
     var sql = 'INSERT INTO ' + mysql.escapeId(table) + ' SET ?';
     console.log(sql);
-    var req = pool.query(sql, options, function(err, res) {
+    var req = pool.query(sql, values, function(err, res) {
         if (err) {
             return next(err);
         }
         return findOne(table, { 'id': res.insertId }, next);
     });
-}
+};
 
 module.exports = {
     'configure': configure,
