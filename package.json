@@ -1,0 +1,18 @@
+{
+  "name": "node-ammonite-mysql",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "ssh://ammonite@vault.phacility.com/diffusion/14/node-ammonite-mysql.git"
+  },
+  "author": "",
+  "private": true,
+  "dependencies": {
+    "mysql": "^2.11.1"
+  }
+}
