@@ -20,7 +20,7 @@ var configure = function(config) {
         host: config.host,
         user: config.user,
         password: config.password,
-        database: config.base
+        database: config.database
     });
 };
 
@@ -30,7 +30,7 @@ var find = function(table, where, tail, next) {
     var whereElements = []
     var values = [];
     for (let name in where) {
-        whereElements.push(name + ' = ?');
+        whereElements.push(mysql.escapeId(name) + ' = ?');
         values.push(where[name]);
     }
     
@@ -76,7 +76,6 @@ var insert = function(table, values, next) {
     if (!pool) return next('Not Configured');
 
     var sql = 'INSERT INTO ' + mysql.escapeId(table) + ' SET ?';
-    console.log(sql);
     var req = pool.query(sql, values, function(err, res) {
         if (err) {
             return next(err);
