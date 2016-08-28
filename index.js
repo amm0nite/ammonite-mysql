@@ -8,7 +8,8 @@ var configure = function(config) {
     }
 
     var requiredProperties = ['user', 'host', 'password', 'database'];
-    for (let property in requiredProperties) {
+    for (let index in requiredProperties) {
+        let property = requiredProperties[index];
         if (!config.hasOwnProperty(property)) {
             throw new Error('Missing ' + property + ' config property');
         }
