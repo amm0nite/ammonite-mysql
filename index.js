@@ -90,22 +90,22 @@ var findAll = function(table, where, next) {
     var offset = 0;
     var limit = 0;
 
-    if (where._offset) {
+    if (where.hasOwnProperty('_offset')) {
         offset = parseInt(where._offset);
-        delete where['_offset'];
+        delete where._offset;
     }
-    if (where._limit) {
+    if (where.hasOwnProperty('_limit')) {
         limit = parseInt(where._limit);
-        delete where['_limit'];
+        delete where._limit;
     }
 
-    var tail = '';
-    if (where._limit) {
-        tail = 'LIMIT ';
-        if (where._offset) {
-            tail += where._offset + ',';
+    var tail = 'ORDER BY id DESC';
+    if (limit) {
+        tail = ' LIMIT ';
+        if (offset) {
+            tail += offset + ',';
         }
-        tail += where._limit;
+        tail += limit;
     }
 
     return find(table, where, tail, next);
