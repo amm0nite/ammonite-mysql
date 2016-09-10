@@ -92,11 +92,11 @@ var findAll = function(table, where, next) {
 
     if (where._offset) {
         offset = parseInt(where._offset);
-        delete where['offset'];
+        delete where['_offset'];
     }
     if (where._limit) {
         limit = parseInt(where._limit);
-        delete where['limit'];
+        delete where['_limit'];
     }
 
     var tail = '';
