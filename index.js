@@ -101,7 +101,7 @@ var findAll = function(table, where, next) {
 
     var tail = 'ORDER BY id DESC';
     if (limit) {
-        tail = ' LIMIT ';
+        tail += ' LIMIT ';
         if (offset) {
             tail += offset + ',';
         }
