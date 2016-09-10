@@ -84,9 +84,36 @@ var insert = function(table, values, next) {
     });
 };
 
+var findAll = function(table, where, next) {
+    if (!pool) return next('Not Configured');
+    
+    var offset = 0;
+    var limit = 0;
+
+    if (where._offset) {
+        offset = parseInt(where._offset);
+        delete where['offset'];
+    }
+    if (where._limit) {
+        limit = parseInt(where._limit);
+        delete where['limit'];
+    }
+
+    var tail = '';
+    if (where._limit) {
+        tail = 'LIMIT ';
+        if (where._offset) {
+            tail += where._offset + ',';
+        }
+        tail += where._limit;
+    }
+
+    return find(table, where, tail, next);
+};
+
 module.exports = {
     'configure': configure,
-    'find':      find,
+    'findAll':   findAll,
     'findOne':   findOne,
-    'insert':    insert
+    'insert':    insert,
 };
