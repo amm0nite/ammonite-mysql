@@ -1,8 +1,10 @@
 var mysql = require('mysql');
+var moment = require('moment');
+var datetime = "YYYY-MM-DD HH:mm:ss";
 
-var pool = null;
+var lib = { 'pool': null };
 
-var configure = function(config) {
+lib.configure = function(config) {
     if (!config) {
         throw new Error('Invalid Config');
     }
@@ -24,9 +26,29 @@ var configure = function(config) {
     });
 };
 
-var find = function(table, where, tail, next) {
-    if (!pool) return next('Not Configured');
+lib.readStructure = function(table, next) {
+    if (lib.tables.hasOwnProperty(table)) {
+        return next(null);
+    }
 
+    var sql = 'SHOW COLUMNS FROM ' + mysql.escapeId(table);
+    var req = pool.query(sql, function(err, res) {
+        if (err) {
+            return next(err);
+        }
+
+        var tableStructure = {};
+        for (let i in res) {
+            let row = res[i];
+            tableStructure[row.Field] = row;
+        }
+        lib.tables[table] = tableStructure;
+
+        return next(null);
+    });
+}
+
+lib.find = function(table, where, tail, next) {
     var whereElements = []
     var values = [];
     for (let name in where) {
@@ -42,9 +64,7 @@ var find = function(table, where, tail, next) {
     var req = pool.query(sql, values, next);
 };
 
-var findOne = function(table, where, next) {
-    if (!pool) return next('Not Configured');
-
+lib.findOne = function(table, where, next) {
     find(table, where, 'LIMIT 1', function(err, res) {
         if (err) {
             return next(err);
@@ -57,10 +77,8 @@ var findOne = function(table, where, next) {
     });
 };
 
-var findLast = function(table, where, next) {
-    if (!pool) return next('Not Configured');
-
-    find(table, where, 'ORDER BY id DESC LIMIT 1', function(err, res) {
+lib.findLast = function(table, where, next) {
+   find(table, where, 'ORDER BY id DESC LIMIT 1', function(err, res) {
         if (err) {
             return next(err);
         }
@@ -72,8 +90,10 @@ var findLast = function(table, where, next) {
     });
 };
 
-var insert = function(table, values, next) {
-    if (!pool) return next('Not Configured');
+lib.insert = function(table, values, next) {
+    if (lib.tables[table].hasOwnProperty('createdAt') && !values.hasOwnProperty('createdAt')) {
+        values.createdAt = moment().format(lib.datetime);
+    }
 
     var sql = 'INSERT INTO ' + mysql.escapeId(table) + ' SET ?';
     var req = pool.query(sql, values, function(err, res) {
@@ -84,9 +104,7 @@ var insert = function(table, values, next) {
     });
 };
 
-var findAll = function(table, where, next) {
-    if (!pool) return next('Not Configured');
-    
+lib.findAll = function(table, where, next) {
     var offset = 0;
     var limit = 0;
 
@@ -112,8 +130,28 @@ var findAll = function(table, where, next) {
 };
 
 module.exports = {
-    'configure': configure,
-    'findAll':   findAll,
-    'findOne':   findOne,
-    'insert':    insert,
+    'configure': configure 
 };
+var functions = [
+    'findAll', 
+    'findOne', 
+    'insert'
+];
+
+for (let i in functions) {
+    var func = functions[i];
+    
+    module.exports[func] = function(table, options, next) {
+        if (!lib.pool) {
+            return next({ 'message': 'Not Configured' });
+        }
+        
+        lib.readStructure(table, function(err) {
+            if (err) {
+                return next(err);
+            }
+
+            lib[func](table, options, next);
+        });
+    };
+}
