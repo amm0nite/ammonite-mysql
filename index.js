@@ -129,6 +129,25 @@ lib.findAll = function(table, where, next) {
     return lib.find(table, where, tail, next);
 };
 
+lib.update = function(table, values, next) {
+    if (!values.hasOwnProperty('id')) {
+        return next({ 'message': 'Missing id' });
+    }
+
+    var updateElements = [];
+    var updateValues = [];
+    for (let col in values) {
+        if (col != 'id') {
+            updateElements.push(col + ' = ?');
+            updateValues.push(values[col]);
+        }
+    }
+    updateValues.push(values.id);
+
+    var sql = 'UPDATE ' + mysql.escapeId(table) + ' SET ' + updateElements.join(', ') + ' WHERE id = ?';
+    var req = lib.pool.query(sql, updateValues, next);
+};
+
 module.exports = {
     'configure': lib.configure 
 };
