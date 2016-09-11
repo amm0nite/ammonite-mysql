@@ -139,9 +139,9 @@ var functions = [
 ];
 
 for (let i in functions) {
-    var func = functions[i];
+    let functionName = functions[i];
     
-    module.exports[func] = function(table, options, next) {
+    module.exports[functionName] = function(table, options, next) {
         if (!lib.pool) {
             return next({ 'message': 'Not Configured' });
         }
@@ -151,7 +151,7 @@ for (let i in functions) {
                 return next(err);
             }
 
-            lib[func](table, options, next);
+            lib[functionName](table, options, next);
         });
     };
 }
