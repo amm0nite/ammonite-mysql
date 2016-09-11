@@ -154,7 +154,8 @@ module.exports = {
 var functions = [
     'findAll', 
     'findOne', 
-    'insert'
+    'insert',
+    'update'
 ];
 
 for (let i in functions) {
