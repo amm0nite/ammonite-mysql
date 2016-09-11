@@ -2,7 +2,7 @@ var mysql = require('mysql');
 var moment = require('moment');
 var datetime = "YYYY-MM-DD HH:mm:ss";
 
-var lib = { 'pool': null };
+var lib = { 'pool': null, 'tables': {} };
 
 lib.configure = function(config) {
     if (!config) {
@@ -17,7 +17,7 @@ lib.configure = function(config) {
         }
     }
 
-    pool = mysql.createPool({
+    lib.pool = mysql.createPool({
         connectionLimit: 10,
         host: config.host,
         user: config.user,
@@ -32,7 +32,7 @@ lib.readStructure = function(table, next) {
     }
 
     var sql = 'SHOW COLUMNS FROM ' + mysql.escapeId(table);
-    var req = pool.query(sql, function(err, res) {
+    var req = lib.pool.query(sql, function(err, res) {
         if (err) {
             return next(err);
         }
@@ -61,11 +61,11 @@ lib.find = function(table, where, tail, next) {
         sql = sql + ' ' + tail;
     }
 
-    var req = pool.query(sql, values, next);
+    var req = lib.pool.query(sql, values, next);
 };
 
 lib.findOne = function(table, where, next) {
-    find(table, where, 'LIMIT 1', function(err, res) {
+    lib.find(table, where, 'LIMIT 1', function(err, res) {
         if (err) {
             return next(err);
         }
@@ -78,7 +78,7 @@ lib.findOne = function(table, where, next) {
 };
 
 lib.findLast = function(table, where, next) {
-   find(table, where, 'ORDER BY id DESC LIMIT 1', function(err, res) {
+   lib.find(table, where, 'ORDER BY id DESC LIMIT 1', function(err, res) {
         if (err) {
             return next(err);
         }
@@ -96,11 +96,11 @@ lib.insert = function(table, values, next) {
     }
 
     var sql = 'INSERT INTO ' + mysql.escapeId(table) + ' SET ?';
-    var req = pool.query(sql, values, function(err, res) {
+    var req = lib.pool.query(sql, values, function(err, res) {
         if (err) {
             return next(err);
         }
-        return findOne(table, { 'id': res.insertId }, next);
+        return lib.findOne(table, { 'id': res.insertId }, next);
     });
 };
 
@@ -126,11 +126,11 @@ lib.findAll = function(table, where, next) {
         tail += limit;
     }
 
-    return find(table, where, tail, next);
+    return lib.find(table, where, tail, next);
 };
 
 module.exports = {
-    'configure': configure 
+    'configure': lib.configure 
 };
 var functions = [
     'findAll', 
