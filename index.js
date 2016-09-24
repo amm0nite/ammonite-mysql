@@ -48,20 +48,22 @@ lib.readStructure = function(table, next) {
     });
 }
 
-lib.find = function(table, where, tail, next) {
+lib.whereClause = function(data) {
     var whereElements = []
-    var values = [];
-    for (let name in where) {
-        whereElements.push(mysql.escapeId(name) + ' = ?');
-        values.push(where[name]);
+    for (let name in data) {
+        let value = data[name];
+        whereElements.push(mysql.escapeId(name) + ' = ' + mysql.escape(value));
     }
-    
-    var sql = 'SELECT * FROM ' + mysql.escapeId(table) + ' WHERE ' + whereElements.join(' AND ');
+    return whereElements.join(' AND ');
+};
+
+lib.find = function(table, where, tail, next) {
+    var sql = 'SELECT * FROM ' + mysql.escapeId(table) + ' WHERE ' + lib.whereClause(where);
     if (tail) {
         sql = sql + ' ' + tail;
     }
 
-    var req = lib.pool.query(sql, values, next);
+    var req = lib.pool.query(sql, next);
 };
 
 lib.findOne = function(table, where, next) {
@@ -148,6 +150,11 @@ lib.update = function(table, values, next) {
     var req = lib.pool.query(sql, updateValues, next);
 };
 
+lib.delete = function(table, where, next) {
+    var sql = 'DELETE FROM ' + mysql.escapeId(table) + ' WHERE ' + lib.whereClause(where);
+    var req = lib.pool.query(sql, next);
+};
+
 module.exports = {
     'configure': lib.configure 
 };
@@ -155,7 +162,8 @@ var functions = [
     'findAll', 
     'findOne', 
     'insert',
-    'update'
+    'update',
+    'delete',
 ];
 
 for (let i in functions) {
