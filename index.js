@@ -140,7 +140,7 @@ lib.update = function(table, values, next) {
     var updateValues = [];
     for (let col in values) {
         if (col != 'id') {
-            updateElements.push(col + ' = ?');
+            updateElements.push(mysql.escapeId(col) + ' = ?');
             updateValues.push(values[col]);
         }
     }
