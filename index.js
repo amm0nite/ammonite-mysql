@@ -159,8 +159,9 @@ module.exports = {
     'configure': lib.configure 
 };
 var functions = [
-    'findAll', 
-    'findOne', 
+    'findAll',
+    'findOne',
+    'findLast',
     'insert',
     'update',
     'delete',
