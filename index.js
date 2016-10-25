@@ -1,6 +1,5 @@
 var mysql = require('mysql');
 var moment = require('moment');
-var datetime = "YYYY-MM-DD HH:mm:ss";
 
 var lib = { 'pool': null, 'tables': {} };
 
@@ -94,7 +93,7 @@ lib.findLast = function(table, where, next) {
 
 lib.insert = function(table, values, next) {
     if (lib.tables[table].hasOwnProperty('createdAt') && !values.hasOwnProperty('createdAt')) {
-        values.createdAt = moment().format(lib.datetime);
+        values.createdAt = moment().format();
     }
 
     var sql = 'INSERT INTO ' + mysql.escapeId(table) + ' SET ?';
