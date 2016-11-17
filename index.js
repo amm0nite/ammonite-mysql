@@ -3,6 +3,8 @@ var moment = require('moment');
 
 var lib = { 'pool': null, 'tables': {} };
 
+lib.datetimeFormat = "YYYY-MM-DD HH:mm:ss";
+
 lib.configure = function(config) {
     if (!config) {
         throw new Error('Invalid Config');
@@ -93,7 +95,7 @@ lib.findLast = function(table, where, next) {
 
 lib.insert = function(table, values, next) {
     if (lib.tables[table].hasOwnProperty('createdAt') && !values.hasOwnProperty('createdAt')) {
-        values.createdAt = moment().format();
+        values.createdAt = moment().format(lib.datetimeFormat);
     }
 
     var sql = 'INSERT INTO ' + mysql.escapeId(table) + ' SET ?';
@@ -135,6 +137,10 @@ lib.update = function(table, values, next) {
         return next({ 'message': 'Missing id' });
     }
 
+    if (lib.tables[table].hasOwnProperty('updatedAt') && !values.hasOwnProperty('updatedAt')) {
+        values.updatedAt = moment().format(lib.datetimeFormat);
+    }
+
     var updateElements = [];
     var updateValues = [];
     for (let col in values) {
@@ -155,7 +161,8 @@ lib.delete = function(table, where, next) {
 };
 
 module.exports = {
-    'configure': lib.configure 
+    'datetimeFormat': lib.datetimeFormat,
+    'configure': lib.configure
 };
 var functions = [
     'findAll',
