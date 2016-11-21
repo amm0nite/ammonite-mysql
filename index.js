@@ -58,7 +58,18 @@ lib.whereClause = function(data) {
     return whereElements.join(' AND ');
 };
 
+lib.castValues = function(data) {
+    for (let name in data) {
+        let value = data[name];
+        if (moment.isDate(value) || moment.isMoment(value)) {
+            data[name] = moment(value).format(lib.datetimeFormat);
+        }
+    }
+};
+
 lib.find = function(table, where, tail, next) {
+    lib.castValues(where);
+
     var sql = 'SELECT * FROM ' + mysql.escapeId(table) + ' WHERE ' + lib.whereClause(where);
     if (tail) {
         sql = sql + ' ' + tail;
@@ -68,6 +79,8 @@ lib.find = function(table, where, tail, next) {
 };
 
 lib.findOne = function(table, where, next) {
+    lib.castValues(where);
+
     lib.find(table, where, 'LIMIT 1', function(err, res) {
         if (err) {
             return next(err);
@@ -81,7 +94,9 @@ lib.findOne = function(table, where, next) {
 };
 
 lib.findLast = function(table, where, next) {
-   lib.find(table, where, 'ORDER BY id DESC LIMIT 1', function(err, res) {
+    lib.castValues(where);
+
+    lib.find(table, where, 'ORDER BY id DESC LIMIT 1', function(err, res) {
         if (err) {
             return next(err);
         }
@@ -94,6 +109,8 @@ lib.findLast = function(table, where, next) {
 };
 
 lib.insert = function(table, values, next) {
+    lib.castValues(values);
+
     if (lib.tables[table].hasOwnProperty('createdAt') && !values.hasOwnProperty('createdAt')) {
         values.createdAt = moment().format(lib.datetimeFormat);
     }
@@ -108,6 +125,8 @@ lib.insert = function(table, values, next) {
 };
 
 lib.findAll = function(table, where, next) {
+    lib.castValues(where);
+
     var offset = 0;
     var limit = 0;
 
@@ -133,6 +152,8 @@ lib.findAll = function(table, where, next) {
 };
 
 lib.update = function(table, values, next) {
+    lib.castValues(values);
+
     if (!values.hasOwnProperty('id')) {
         return next({ 'message': 'Missing id' });
     }
@@ -156,6 +177,8 @@ lib.update = function(table, values, next) {
 };
 
 lib.delete = function(table, where, next) {
+    lib.castValues(where);
+
     var sql = 'DELETE FROM ' + mysql.escapeId(table) + ' WHERE ' + lib.whereClause(where);
     var req = lib.pool.query(sql, next);
 };
