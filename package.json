@@ -1,5 +1,5 @@
 {
-  "name": "node-ammonite-mysql",
+  "name": "ammonite-mysql",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
@@ -8,7 +8,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "ssh://ammonite@vault.phacility.com/diffusion/14/node-ammonite-mysql.git"
+    "url": "ssh://ammonite@vault.phacility.com/source/ammonite-mysql.git"
   },
   "author": "",
   "private": true,
