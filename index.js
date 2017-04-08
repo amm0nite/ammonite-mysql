@@ -1,5 +1,6 @@
-var mysql = require('mysql');
-var moment = require('moment');
+const mysql = require('mysql');
+const moment = require('moment');
+const uuidV4 = require('uuid/v4');
 
 var lib = { 'pool': null, 'tables': {} };
 
@@ -113,6 +114,9 @@ lib.insert = function(table, values, next) {
 
     if (lib.tables[table].hasOwnProperty('createdAt') && !values.hasOwnProperty('createdAt')) {
         values.createdAt = moment().format(lib.datetimeFormat);
+    }
+    if (lib.tables[table.hasOwnProperty('uid') && !values.hasOwnProperty('uid')]) {
+        values.uid = uuidV4();
     }
 
     var sql = 'INSERT INTO ' + mysql.escapeId(table) + ' SET ?';
