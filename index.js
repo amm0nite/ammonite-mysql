@@ -115,7 +115,7 @@ lib.insert = function(table, values, next) {
     if (lib.tables[table].hasOwnProperty('createdAt') && !values.hasOwnProperty('createdAt')) {
         values.createdAt = moment().format(lib.datetimeFormat);
     }
-    if (lib.tables[table.hasOwnProperty('uid') && !values.hasOwnProperty('uid')]) {
+    if (lib.tables[table].hasOwnProperty('uid') && !values.hasOwnProperty('uid')) {
         values.uid = uuidV4();
     }
 
