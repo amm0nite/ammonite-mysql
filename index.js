@@ -158,8 +158,15 @@ lib.findAll = function(table, where, next) {
 lib.update = function(table, values, next) {
     lib.castValues(values);
 
-    if (!values.hasOwnProperty('id')) {
-        return next({ 'message': 'Missing id' });
+    let reference = null;
+    if (values.hasOwnProperty('id')) {
+        reference = 'id';
+    }
+    else if (values.hasOwnProperty('uid')) {
+        reference = 'uid';
+    }
+    if (!reference) {
+        return next({ 'message': 'Missing id or uid' });
     }
 
     if (lib.tables[table].hasOwnProperty('updatedAt') && !values.hasOwnProperty('updatedAt')) {
@@ -169,14 +176,14 @@ lib.update = function(table, values, next) {
     var updateElements = [];
     var updateValues = [];
     for (let col in values) {
-        if (col != 'id') {
+        if (col != 'id' && col != 'uid') {
             updateElements.push(mysql.escapeId(col) + ' = ?');
             updateValues.push(values[col]);
         }
     }
-    updateValues.push(values.id);
+    updateValues.push(values[reference]);
 
-    var sql = 'UPDATE ' + mysql.escapeId(table) + ' SET ' + updateElements.join(', ') + ' WHERE id = ?';
+    var sql = 'UPDATE ' + mysql.escapeId(table) + ' SET ' + updateElements.join(', ') + ' WHERE ' + reference + ' = ?';
     var req = lib.pool.query(sql, updateValues, next);
 };
 
