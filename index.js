@@ -28,13 +28,20 @@ lib.configure = function(config) {
     });
 };
 
+lib.query = function(sql, next) {
+    if (!lib.pool) {
+        return next({ 'message': 'Not Configured' });
+    }
+    return lib.pool.query(sql, next);
+};
+
 lib.readStructure = function(table, next) {
     if (lib.tables.hasOwnProperty(table)) {
         return next(null);
     }
 
     var sql = 'SHOW COLUMNS FROM ' + mysql.escapeId(table);
-    var req = lib.pool.query(sql, function(err, res) {
+    var req = lib.query(sql, function(err, res) {
         if (err) {
             return next(err);
         }
@@ -76,7 +83,7 @@ lib.find = function(table, where, tail, next) {
         sql = sql + ' ' + tail;
     }
 
-    var req = lib.pool.query(sql, next);
+    return lib.query(sql, next);
 };
 
 lib.findOne = function(table, where, next) {
@@ -120,7 +127,7 @@ lib.insert = function(table, values, next) {
     }
 
     var sql = 'INSERT INTO ' + mysql.escapeId(table) + ' SET ?';
-    var req = lib.pool.query(sql, values, function(err, res) {
+    lib.query(sql, values, function(err, res) {
         if (err) {
             return next(err);
         }
@@ -184,14 +191,14 @@ lib.update = function(table, values, next) {
     updateValues.push(values[reference]);
 
     var sql = 'UPDATE ' + mysql.escapeId(table) + ' SET ' + updateElements.join(', ') + ' WHERE ' + reference + ' = ?';
-    var req = lib.pool.query(sql, updateValues, next);
+    return lib.query(sql, updateValues, next);
 };
 
 lib.delete = function(table, where, next) {
     lib.castValues(where);
 
     var sql = 'DELETE FROM ' + mysql.escapeId(table) + ' WHERE ' + lib.whereClause(where);
-    var req = lib.pool.query(sql, next);
+    return lib.query(sql, next);
 };
 
 module.exports = {
@@ -211,16 +218,11 @@ for (let i in functions) {
     let functionName = functions[i];
     
     module.exports[functionName] = function(table, options, next) {
-        if (!lib.pool) {
-            return next({ 'message': 'Not Configured' });
-        }
-        
         lib.readStructure(table, function(err) {
-            if (err) {
-                return next(err);
-            }
-
-            lib[functionName](table, options, next);
+            if (err) { return next(err); }
+            return lib[functionName](table, options, next);
         });
     };
 }
+
+module.exports.query = lib.query;
