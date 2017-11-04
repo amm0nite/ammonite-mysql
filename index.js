@@ -28,11 +28,15 @@ lib.configure = function(config) {
     });
 };
 
-lib.query = function(sql, next) {
+lib.query = function(sql, values, next) {
+    if (typeof values === 'function' && !next) {
+        next = values;
+        values = {};
+    }
     if (!lib.pool) {
         return next({ 'message': 'Not Configured' });
     }
-    return lib.pool.query(sql, next);
+    return lib.pool.query(sql, values, next);
 };
 
 lib.readStructure = function(table, next) {
