@@ -1,14 +1,10 @@
 {
   "name": "ammonite-mysql",
   "version": "1.0.0",
-  "description": "",
+  "description": "Node.js MySQL Helper",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
-  },
-  "repository": {
-    "type": "git",
-    "url": "ssh://ammonite@vault.phacility.com/source/ammonite-mysql.git"
   },
   "author": "",
   "private": true,
@@ -16,5 +12,15 @@
     "moment": "^2.20.1",
     "mysql": "^2.15.0",
     "uuid": "^3.1.0"
-  }
+  },
+  "devDependencies": {},
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/amm0nite/ammonite-mysql.git"
+  },
+  "bugs": {
+    "url": "https://github.com/amm0nite/ammonite-mysql/issues"
+  },
+  "homepage": "https://github.com/amm0nite/ammonite-mysql#readme"
 }
