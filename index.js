@@ -34,7 +34,7 @@ lib.query = function(sql, values, next) {
         values = {};
     }
     if (!lib.pool) {
-        return next({ 'message': 'Not Configured' });
+        return next(new Error('Not Configured'));
     }
     return lib.pool.query(sql, values, next);
 };
@@ -177,7 +177,7 @@ lib.update = function(table, values, next) {
         reference = 'uid';
     }
     if (!reference) {
-        return next({ 'message': 'Missing id or uid' });
+        return next(new Error('Missing id or uid'));
     }
 
     if (lib.tables[table].hasOwnProperty('updatedAt') && !values.hasOwnProperty('updatedAt')) {
